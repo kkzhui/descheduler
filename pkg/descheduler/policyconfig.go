@@ -136,23 +136,21 @@ func validateDeschedulerConfiguration(in api.DeschedulerPolicy, registry pluginr
 	var errorsInProfiles error
 	for _, profile := range in.Profiles {
 		for _, pluginConfig := range profile.PluginConfigs {
-			if _, ok := registry[pluginConfig.Name]; ok {
-				if _, ok := registry[pluginConfig.Name]; !ok {
-					errorsInProfiles = fmt.Errorf("%w: %s", errorsInProfiles, fmt.Sprintf("in profile %s: plugin %s in pluginConfig not registered", profile.Name, pluginConfig.Name))
-					continue
-				}
+			if _, ok := registry[pluginConfig.Name]; !ok {
+				errorsInProfiles = fmt.Errorf("%w: %s", errorsInProfiles, fmt.Sprintf("in profile %s: plugin %s in pluginConfig not registered", profile.Name, pluginConfig.Name))
+				continue
+			}
 
-				pluginUtilities := registry[pluginConfig.Name]
-				if pluginUtilities.PluginArgValidator == nil {
-					continue
-				}
-				err := pluginUtilities.PluginArgValidator(pluginConfig.Args)
-				if err != nil {
-					if errorsInProfiles == nil {
-						errorsInProfiles = fmt.Errorf("in profile %s: %s", profile.Name, err.Error())
-					} else {
-						errorsInProfiles = fmt.Errorf("%w: %s", errorsInProfiles, fmt.Sprintf("in profile %s: %s", profile.Name, err.Error()))
-					}
+			pluginUtilities := registry[pluginConfig.Name]
+			if pluginUtilities.PluginArgValidator == nil {
+				continue
+			}
+			err := pluginUtilities.PluginArgValidator(pluginConfig.Args)
+			if err != nil {
+				if errorsInProfiles == nil {
+					errorsInProfiles = fmt.Errorf("in profile %s: %s", profile.Name, err.Error())
+				} else {
+					errorsInProfiles = fmt.Errorf("%w: %s", errorsInProfiles, fmt.Sprintf("in profile %s: %s", profile.Name, err.Error()))
 				}
 			}
 		}
